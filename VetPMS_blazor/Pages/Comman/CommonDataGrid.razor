@@ -1,0 +1,18 @@
+﻿@typeparam TItem
+
+<RadzenDataGrid TItem="TItem" Data="@Data" AllowFiltering="true" AllowPaging="true" AllowSorting="true" PageSize="PageSize"
+                class="scrollable-grid" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Responsive="true" Style="width: 100%;"
+                GridLines="DataGridGridLines.Both" Density="Density.Compact">
+    <Columns>
+        @if (Columns != null)
+        {
+            @Columns
+        }
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    [Parameter] public IEnumerable<TItem> Data { get; set; } = new List<TItem>();
+    [Parameter] public int PageSize { get; set; } = 5;
+    [Parameter] public RenderFragment Columns { get; set; } = default!;
+}

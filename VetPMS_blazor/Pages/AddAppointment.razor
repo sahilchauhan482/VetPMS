@@ -1,0 +1,110 @@
+﻿@attribute [Authorize(Roles = $"{Roles.Admin},{Roles.Clinic}")]
+@inject DialogService dialogService
+@inject BreedService breedService
+@inject OwnerService ownerService
+
+<RadzenTemplateForm TItem="AppointmentDTO" Data="@model" Submit=@OnSubmit>
+    <FluentValidationValidator />
+    <RadzenStack Gap="1rem">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Owner Name" Style="width: 8rem;" />
+            <RadzenDropDown @bind-Value="@model.OwnerId" Data="@owners" TextProperty="Name" ValueProperty="Id" Name="Owner" Style="width: 20rem;" />
+            <ValidationMessage For="@(() => model.OwnerId)" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Breed Name" Style="width: 8rem;" />
+            <RadzenDropDown @bind-Value="@model.BreedId" Data="@breeds" TextProperty="Name" ValueProperty="Id" Name="Breed" Style="width: 20rem;" />
+            <ValidationMessage For="@(() => model.BreedId)" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Services" Style="width: 8rem;" />
+            <RadzenDropDown @bind-Value="@model.Services" Data="@services" Name="Services" Style="width: 20rem;" />
+            <ValidationMessage For="@(() => model.Services)" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Email" Style="width: 8rem;" />
+            <RadzenTextBox @bind-Value="@model.Email" Name="Email" Style="width: 20rem;" />
+            <ValidationMessage For="@(() => model.Email)" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Phone Number" Style="width: 8rem;" />
+            <RadzenTextBox @bind-Value="@model.Phone" Name="Phone" Style="width: 20rem;" />
+            <ValidationMessage For="@(() => model.Phone)" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Title" Style="width: 8rem;" />
+            <RadzenTextBox @bind-Value="@model.Title" Name="Title" Style="width: 20rem;" />
+            <ValidationMessage For="@(() => model.Title)" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Start" Style="width: 8rem;" />
+            <RadzenDatePicker @bind-Value="@model.Start" Name="Start" ShowTime="true" Style="width: 20rem;" />
+            <ValidationMessage For="@(() => model.Start)" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="End" Style="width:8rem;" />
+            <RadzenDatePicker @bind-Value="@model.End" Name="End" ShowTime="true" Style="width: 20rem;" />
+            <ValidationMessage For="@(() => model.End)" />
+        </RadzenStack>        
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Comments" Style="width: 8rem;" />
+            <RadzenTextArea @bind-Value="@model.Comments" Rows="3" Name="Comments" Style="width: 20rem;" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Reminder" Style="width: 8rem;" />
+            <RadzenCheckBox @bind-Value="@model.Reminder" Name="Reminder" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+            <RadzenButton ButtonType="ButtonType.Submit" Text="Save" />
+        </RadzenStack>
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter]
+    public DateTime Start { get; set; }
+
+    [Parameter]
+    public DateTime End { get; set; }
+
+    public AppointmentDTO model = new AppointmentDTO();
+    private List<OwnerDTO> owners = new List<OwnerDTO>();
+    private List<BreedDTO> breeds = new List<BreedDTO>();   
+
+    private List<string> services = new List<string>
+    {
+        "Vaccination",
+        "Check-up",
+        "Surgery",
+        "Deworming",
+        "Spraying/Neutering",
+        "Grooming",
+        "Dental Cleaning",
+        "Flea Treatment",
+        "Health Certificate",
+        "Bathing"
+    };
+
+
+    protected override async Task OnInitializedAsync()
+    {
+       
+        owners = await ownerService.GetAllOwners();
+        breeds = await breedService.GetAllBreeds();
+    }
+
+    void OnSubmit(AppointmentDTO model)
+    {      
+        dialogService.Close(model);
+    }
+}

@@ -1,0 +1,22 @@
+﻿Hello {FullName},
+
+Welcome to VetPMS!
+
+We are thrilled to have you join our platform. Here are your registration details:
+
+- Email: {Email}
+- User Name: {UserName}
+
+To get started, we recommend you to explore the following resources:
+
+1. User Guide: https://ourwebsite.com/user-guide
+2. FAQ: https://ourwebsite.com/faq
+3. Support: https://ourwebsite.com/support
+
+If you have any questions or need assistance, feel free to reach out to our support team at support@ourservice.com.
+
+We look forward to seeing you thrive in our community.
+
+
+Best regards,
+The VetPMS Team

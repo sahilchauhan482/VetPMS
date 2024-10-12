@@ -1,0 +1,86 @@
+﻿/* Spinner CSS */
+.loader {
+    border: 8px solid #f3f3f3; /* Light gray border */
+    border-top: 8px solid #00CED1; /* Aqua border for the top to create the spinning effect */
+    border-radius: 50%; /* Makes it circular */
+    width: 60px; /* Width of the spinner */
+    height: 60px; /* Adjusted height to match width for a perfect circle */
+    animation: spin 1s linear infinite; /* Spins the loader indefinitely */
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%); /* Centers the spinner */
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.loader-container {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+    top: 0;
+    left: 0;
+    z-index: 9999; /* Ensures it appears above other content */
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Centers the spinner container */
+}
+
+/* Input icon styling */
+.input-icon {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6c757d; /* Change this to match your theme */
+    font-size: 1.25rem; /* Adjust size if needed */
+}
+
+.input-group {
+    position: relative;
+}
+
+.input-icon i {
+    font-size: 1.2rem;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 20px;
+    background-color: #f8f9fa;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    background-color: #f1f1f1;
+}
+
+@media (max-width: 576px) {
+    .modal-body {
+        padding: 10px;
+    }
+
+    .col-12 {
+        margin-bottom: 10px;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}

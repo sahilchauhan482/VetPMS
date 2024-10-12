@@ -1,0 +1,135 @@
+﻿@inherits LayoutComponentBase
+@inject ClinicService clinicService
+@inject NavigationManager Navigation
+@inject Blazored.LocalStorage.ILocalStorageService _localStorage
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthenticationStateProvider
+
+<RadzenLayout>
+    <!-- Header Section -->
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0" Style="width: 100%; padding: 0 1rem;">
+            <AuthorizeView>
+                <Authorized Context="outerContext">
+                    <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <div class="col-auto d-flex" style="align-items: baseline">
+                            <div class="nav-item text-white">
+                                <i class="fas fa-clinic-medical text-white me-2"></i>
+                                <span>@clinicName</span>
+                            </div>
+
+                            <AuthorizeView Roles="Admin">
+                                <Authorized Context="adminContext">
+                                    <div class="form-group row d-flex justify-content-center m-2">
+                                        <InputSelect class="form-control custom-dropdown" title="" @bind-Value="register.ClinicId" @oninput="OnClinicChanged">
+                                            <option value="">---Select Clinic---</option>
+                                            @foreach (var clinic in clinicList)
+                                            {
+                                                <option value="@clinic.ClinicId">@clinic.ClinicName</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                </Authorized>
+                            </AuthorizeView>
+                        </div>
+
+                        <div class="d-flex align-items-center">
+                            <RadzenAppearanceToggle />
+                            <div class="nav-item text-white mx-3">
+                                <i class="fas fa-user" aria-hidden="true"></i> @outerContext.User?.Identity?.Name
+                            </div>
+                            <div class="nav-item">
+                                <RadzenButton Icon="exit_to_app" Text="Log Out" Click="NavigateToLogout" Style="color: white;" ButtonStyle="ButtonStyle.Primary" />
+                            </div>
+                        </div>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+        </RadzenStack>
+    </RadzenHeader>
+
+    <!-- Sidebar Section -->
+    <AuthorizeView>
+        <Authorized Context="outerContext">
+            <RadzenSidebar @bind-Expanded="@sidebarExpanded">
+                <RadzenPanelMenu>
+                    <RadzenPanelMenuItem Text="Home" Icon="home" Path="/" />
+                    <RadzenPanelMenuItem Text="Pets" Icon="pets" Path="/pets" />
+                    <RadzenPanelMenuItem Text="Owners" Icon="person" Path="/owners" />
+                    <RadzenPanelMenuItem Text="Medicine" Icon="medication" Path="/medicines" />
+                    <RadzenPanelMenuItem Text="Appointment" Icon="calendar_today" Path="/appointments" />
+                    <AuthorizeView Roles="Admin">
+                        <Authorized Context="innerAdminContext">
+                            <RadzenPanelMenuItem Text="Clinic" Icon="local_hospital" Path="/clinics" />
+                            <RadzenPanelMenuItem Text="Register" Icon="person_add" Path="/register" />
+                        </Authorized>
+                    </AuthorizeView>
+                </RadzenPanelMenu>
+            </RadzenSidebar>
+        </Authorized>
+    </AuthorizeView>
+
+    <RadzenBody>
+        @Body
+    </RadzenBody>
+
+    @if (sidebarExpanded)
+    {
+        <div @onclick="@(() => sidebarExpanded = false)"></div>
+    }
+
+    <RadzenFooter></RadzenFooter>
+</RadzenLayout>
+
+<RadzenDialog />
+<RadzenTooltip />
+
+@code {
+    private string clinicName = string.Empty;
+    private RegisterDTO register = new RegisterDTO();
+    private List<ClinicDto> clinicList = new List<ClinicDto>();
+    private bool sidebarExpanded = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        // Get the current URL
+        var currentUrl = Navigation.Uri;
+
+        // Redirect to login if user is not authenticated and not already on the login page
+        if (!user.Identity.IsAuthenticated && !currentUrl.Contains("/login"))
+        {
+            Navigation.NavigateTo("/login", forceLoad: true);
+            return;
+        }
+
+        clinicName = await _localStorage.GetItemAsync<string>("clinicName") ?? "";
+
+        if (user.IsInRole("Admin"))
+        {
+            clinicList = await clinicService.GetAllClinics();
+        }
+    }
+
+    private async Task OnClinicChanged(ChangeEventArgs e)
+    {
+        var clinicIdString = e.Value.ToString();
+        if (int.TryParse(clinicIdString, out int clinicId))
+        {
+            register.ClinicId = clinicId;
+            await _localStorage.SetItemAsync("clinicId", clinicIdString);
+            var selectedClinic = clinicList.FirstOrDefault(c => c.ClinicId == clinicId);
+            await _localStorage.SetItemAsync("clinicName", selectedClinic?.ClinicName ?? "");
+            clinicName = selectedClinic?.ClinicName ?? "";
+            Navigation.NavigateTo("/");
+            StateHasChanged();
+        }
+    }
+
+    private void NavigateToLogout()
+    {
+        Navigation.NavigateTo("/logout");
+    }
+}

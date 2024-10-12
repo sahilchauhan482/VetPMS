@@ -1,0 +1,92 @@
+﻿@* <div class="top-row fixed-top-bar ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">
+            <img src="vetplatform.png" alt="VetPMS" style="height: 40px; width: 170px; padding-bottom: 6px;">
+        </a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="nav-scrollable fixed-sidebar @NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <h5>
+                <NavLink class="nav-link" style="font-size:20px" href="" Match="NavLinkMatch.All">
+                    <span class="bi bi-house-door-fill-nav-menu" style="font-size:30px" aria-hidden="true"></span>&nbsp;  Home
+                </NavLink>
+            </h5>
+        </div>
+        <AuthorizeView Roles="Admin,Clinic">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <h5>
+                        <NavLink class="nav-link" style="font-size:20px" href="pets">
+                            <i class="fas fa-dog" style="color: black;font-size:20px"></i>&nbsp; &nbsp; Pets
+                        </NavLink>
+                    </h5>
+                </div>
+                <div class="nav-item px-3">
+                    <h5>
+                        <NavLink class="nav-link" style="font-size:20px" href="owners">
+                            <i class="fas fa-user" style="color: black;font-size:20px"></i>&nbsp; &nbsp; Owner
+                        </NavLink>
+                    </h5>
+                </div>
+
+                <div class="nav-item px-3">
+                    <h5>
+
+                        <NavLink class="nav-link" style="font-size:20px" href="medicines">
+                            <i class="fas fa-medkit" style="color: black;font:100"></i>&nbsp; &nbsp;    Medicine
+                        </NavLink>
+                    </h5>
+                </div>
+
+                <div class="nav-item px-3">
+                    <h5>
+                        <NavLink class="nav-link" style="font-size:20px" href="appointments">
+                            <i class="fa fa-calendar" style="color: black;font-size:20px"></i>&nbsp; &nbsp; Appointment
+                        </NavLink>
+                    </h5>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <h5>
+                        <NavLink class="nav-link" style="font-size:20px" href="/clinics">
+                            <i class="fas fa-clinic-medical" style="color: black;font-size:20px"></i>&nbsp; &nbsp; Clinic
+                        </NavLink>
+                       
+                    </h5>
+                </div>
+
+                <div class="nav-item px-3">
+                    <h5>
+                        <NavLink class="nav-link" style="font-size:20px" href="/register">
+                            <i class="fas fa-user-plus" style="color: black;font-size:20px"></i>&nbsp; &nbsp; Register
+                        </NavLink>
+                    </h5>
+                </div>
+
+            </Authorized>
+        </AuthorizeView>
+
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}
+ *@

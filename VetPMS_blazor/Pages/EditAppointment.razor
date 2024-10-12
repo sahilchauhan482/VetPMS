@@ -1,0 +1,155 @@
+﻿@page "/EditAppointmentPage"
+
+@attribute [Authorize(Roles = $"{Roles.Admin},{Roles.Clinic}")]
+@inject DialogService dialogService
+@inject BreedService breedService
+@inject OwnerService ownerService
+@inject AppointmentService appointmentService
+
+
+<RadzenTemplateForm TItem="AppointmentDTO" Data="@model" Submit=@OnSubmit>
+    <RadzenStack Gap="1rem">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Owner Name" Style="width: 8rem;" />
+            <RadzenDropDown @bind-Value="@model.OwnerId" Data="@owners" TextProperty="Name" ValueProperty="Id" Name="Owner" Style="width: 20rem;" />
+            <RadzenRequiredValidator Component="Owner" Text="Owner is required" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Breed Name" Style="width: 8rem;" />
+            <RadzenDropDown @bind-Value="@model.BreedId" Data="@breeds" TextProperty="Name" ValueProperty="Id" Name="Breed" Style="width: 20rem;" />
+            <RadzenRequiredValidator Component="Breed" Text="Breed is required" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Services" Style="width: 8rem;" />
+            <RadzenDropDown @bind-Value="@model.Services"
+                            Data="@services"
+                            Name="Services"
+                            Style="width: 20rem;" />
+            <RadzenRequiredValidator Component="Services" Text="Services are required" />
+
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Email" Style="width: 8rem;" />
+            <RadzenTextBox @bind-Value="@model.Email" Name="Email" Style="width: 20rem;" />
+            <RadzenRequiredValidator Component="Email" Text="Email is required" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Phone Number" Style="width: 8rem;" />
+            <RadzenTextBox @bind-Value="@model.Phone" Name="Phone" Style="width: 20rem;" />
+            <RadzenRequiredValidator Component="Phone" Text="Phone Number is required" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Title" Style="width: 8rem;" />
+            <RadzenTextBox @bind-Value="@model.Title" Name="Title" Style="width: 20rem;" />
+            <RadzenRequiredValidator Component="Title" Text="Title is required" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Start" Style="width: 8rem;" />
+            <RadzenDatePicker @bind-Value="@model.Start" Name="Start" ShowTime="true" Style="width: 20rem;" />
+            <RadzenRequiredValidator Component="Start" Text="Start is required" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="End" Style="width:8rem;" />
+            <RadzenDatePicker @bind-Value="@model.End" Name="End" ShowTime="true" Style="width: 20rem;" />
+            <RadzenRequiredValidator Component="End" Text="End is required" />
+        </RadzenStack>        
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Comments" Style="width: 8rem;" />
+            <RadzenTextArea @bind-Value="@model.Comments" Rows="3" Name="Comments" Style="width: 20rem;" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenLabel Text="Reminder" Style="width: 8rem;" />
+            <RadzenCheckBox @bind-Value="@model.Reminder" TValue="bool" TriState="false" Name="Reminder" />
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+            <RadzenButton ButtonType="ButtonType.Submit" Text="Update" />
+            <RadzenButton ButtonType="ButtonType.Button" Text="Delete" Click="@OnDelete" Style="margin-right: 5rem;" />
+        </RadzenStack>
+       
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter]
+    public AppointmentDTO Appointment { get; set; }  
+    private AppointmentDTO model = new AppointmentDTO();
+    private List<OwnerDTO> owners = new List<OwnerDTO>();
+    private List<BreedDTO> breeds = new List<BreedDTO>(); 
+    public string Services { get; set; }
+
+
+    private List<string> services = new List<string>
+    {
+        "Vaccination",
+        "Check-up",
+        "Surgery",
+        "Deworming",
+        "Spraying/Neutering",
+        "Grooming",
+        "Dental Cleaning",
+        "Flea Treatment",
+        "Health Certificate",
+        "Bathing"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        Services = !string.IsNullOrEmpty(Appointment.Services)
+                    ? Appointment.Services
+                    : (services.Any() ? services.First() : string.Empty);
+
+
+        owners = await ownerService.GetAllOwners();
+        breeds = await breedService.GetAllBreeds();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Appointment != null)
+        {
+            model = new AppointmentDTO
+                {
+                    Id = Appointment.Id,
+                    OwnerId = Appointment.OwnerId,
+                    BreedId = Appointment.BreedId,
+                    // Ensure that the services list is not empty before attempting to assign a default value
+                    Services = !string.IsNullOrEmpty(Appointment.Services)
+                ? Appointment.Services
+                : (services.Any() ? services.First().ToString() : string.Empty),
+
+                    Comments = Appointment.Comments,
+                    Reminder = Appointment.Reminder,
+                    Email = Appointment.Email,
+                    Phone = Appointment.Phone,
+                    Start = Appointment.Start,
+                    End = Appointment.End,
+                    Title = Appointment.Title,
+                };
+        }
+    }
+
+    private async Task OnDelete()
+    {
+        var confirmed = await dialogService.Confirm("Are you sure you want to delete this appointment?", "Confirm Delete");
+        if (confirmed == true)
+        {
+            await appointmentService.DeleteAppointment(model.Id);
+            dialogService.Close();
+            StateHasChanged();
+        }
+    }
+
+    void OnSubmit(AppointmentDTO model)
+    {
+        dialogService.Close(model);
+    }
+}

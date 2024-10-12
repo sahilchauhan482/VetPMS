@@ -1,0 +1,148 @@
+﻿@inherits ComponentBase
+@inject DialogService DialogService
+@inject OwnerService ownerService
+@inject Blazored.Toast.Services.IToastService toastService
+@inject IJSRuntime js
+
+<EditForm Model="newOwner" OnValidSubmit="HandleOwnerSubmit">
+    <FluentValidationValidator />
+
+    <!-- Modal Header -->
+    <div class="modal-header" style="background-color: lightgrey; padding: 15px; border-bottom: 1px solid #ccc;">
+        <h3 class="m-0">Fill Owner Details</h3>
+        <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body" style="padding: 20px;">
+        <div class="row g-3">
+          
+            <div class="col-12 col-md-6">
+                <label for="ownerName">Owner Name</label>
+                <InputText id="ownerName" class="form-control" title="@TooltipTexts.OwnerName" @bind-Value="newOwner.Name" placeholder="Enter owner name" />
+               
+            </div>
+
+           
+            <div class="col-12 col-md-6">
+                <label for="ownerAddress">Address</label>
+                <InputText id="ownerAddress" class="form-control" title="@TooltipTexts.OwnerAddress" @bind-Value="newOwner.Address" placeholder="Enter address" />
+               
+            </div>
+
+            
+            <div class="col-12 col-md-6">
+                <label for="ownerPhone">Phone Number</label>
+                <InputText id="ownerPhone" type="text" class="form-control" title="@TooltipTexts.OwnerPhone" @bind-Value="newOwner.PhoneNumber" placeholder="Enter phone number"
+                       @oninput="CheckPhoneNumberDuplicate" onkeydown="AllowOnlyNumbers(event)" />
+                <div class="text-danger">@phoneErrorMessage</div>
+            </div>
+
+            
+            <div class="col-12 col-md-6">
+                <label for="ownerEmail">Email</label>
+                <InputText id="ownerEmail" class="form-control" title="@TooltipTexts.OwnerEmail" @bind-Value="newOwner.Email" placeholder="Enter email"
+                           @oninput="CheckEmailDuplicate" />
+                <div class="text-danger">@emailErrorMessage</div>
+            </div>
+        </div>
+    </div>
+
+   
+    <div class="modal-footer" style="padding: 15px; border-top: 1px solid #ccc;">
+        <div class="d-flex justify-content-end w-100">
+            <button type="button" class="btn btn-secondary me-2" @onclick="CloseModal">Close</button>
+            <button type="submit" class="btn btn-primary" disabled="@(isSubmitting || isSaveButtonDisabled)">
+                @if (isSubmitting)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span>&nbsp;Saving..</span>
+                }
+                else
+                {
+                    <i class="fas fa-save"></i>
+                    <span>&nbsp;Save</span>
+                }
+            </button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private OwnerDTO newOwner = new OwnerDTO();
+    private List<OwnerDTO>? ownersList;
+    private string? emailErrorMessage;
+    private string? phoneErrorMessage;
+    private bool isSubmitting = false;
+    private bool isLoading = false;
+    private bool isFormVisible = false;
+    private bool isSaveButtonDisabled = false;
+
+    private async Task CheckEmailDuplicate(ChangeEventArgs e)
+    {
+        var email = e.Value!.ToString();
+        bool existEmail = await ownerService.CheckEmailExistsAsync(email!);
+        if (existEmail)
+        {
+            emailErrorMessage = "Email already exists";
+            isSaveButtonDisabled = true;
+        }
+        else
+        {
+            emailErrorMessage = string.Empty;
+            isSaveButtonDisabled = false;
+        }
+        StateHasChanged();
+    }
+
+    private async Task CheckPhoneNumberDuplicate(ChangeEventArgs e)
+    {
+        var phoneNumber = e.Value!.ToString();
+        bool existPhone = await ownerService.CheckPhoneNumberExistsAsync(phoneNumber!);
+
+        if (existPhone)
+        {
+            phoneErrorMessage = "Phone number already exists";
+            isSaveButtonDisabled = true;
+        }
+        else
+        {
+            phoneErrorMessage = string.Empty;
+            isSaveButtonDisabled = false;
+        }
+        StateHasChanged();
+    }
+
+    private async Task HandleOwnerSubmit()
+    {
+        try
+        {
+            isSubmitting = true;
+            await ownerService.AddOwner(newOwner);
+            toastService.ShowSuccess("Owner registered successfully!");
+
+            newOwner = new OwnerDTO();
+            ownersList = await ownerService.GetAllOwners();
+            StateHasChanged();
+            DialogService.Close(null);
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError("Registration failed: " + ex.Message);
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void CloseModal()
+    {
+        DialogService.Close(null); 
+    }
+
+    private void ToggleFormVisibility()
+    {
+        isFormVisible = !isFormVisible;
+    }
+}

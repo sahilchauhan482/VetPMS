@@ -1,0 +1,186 @@
+﻿@page "/appointments"
+
+@attribute [Authorize(Roles = $"{Roles.Admin},{Roles.Clinic}")]
+@inject DialogService dialogService
+@inject TooltipService TooltipService
+@inject OwnerService ownerService
+@inject BreedService breedService
+@inject AppointmentService appointmentService
+
+<div class="rounded border mb-2 p-2 row" style="background-color:lightgrey">
+    <div class="col-11 text-black">
+        <h2 class="m-0">Appointments</h2>
+    </div>
+</div>
+
+<RadzenScheduler @ref=@scheduler
+                 SlotRender=@OnSlotRender
+                 style="height: 570px;"
+                 TItem="AppointmentDTO"
+                 Data=@appointments
+                 StartProperty="Start"
+                 EndProperty="End"
+                 TextProperty="Title"
+                 SelectedIndex="2"
+                 SlotSelect=@OnSlotSelect
+                 AppointmentSelect=@OnAppointmentSelect               
+                 AppointmentMove=@OnAppointmentMove
+                 AppointmentMouseEnter=@OnAppointmentMouseEnter
+                 AppointmentMouseLeave=@OnAppointmentMouseLeave>
+    <RadzenDayView />
+    <RadzenWeekView />
+    <RadzenMonthView />
+</RadzenScheduler>
+
+
+@code {
+    private RadzenScheduler<AppointmentDTO> scheduler = new RadzenScheduler<AppointmentDTO>();
+
+    private IList<AppointmentDTO> appointments = new List<AppointmentDTO>();
+    private List<OwnerDTO> ownersList = new List<OwnerDTO>();
+    private List<BreedDTO> breedList = new List<BreedDTO>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        ownersList = await ownerService.GetAllOwners();
+        appointments = await appointmentService.GetAllAppointments();
+        breedList = await breedService.GetAllBreeds();
+    }  
+
+    Dictionary<DateTime, string> events = new Dictionary<DateTime, string>();
+
+    void OnSlotRender(SchedulerSlotRenderEventArgs args)
+    {
+
+        if (args.Start.Date <= DateTime.Today)
+        {
+            args.Attributes["style"] = "background-color: lightgrey; pointer-events: none;";
+        }
+
+        if (args.View.Text == "Month" && args.Start.Date == DateTime.Today)
+        {
+            args.Attributes["style"] = "background: var(--rz-scheduler-highlight-background-color, rgba(255,220,40,.2));";
+        }
+
+        if ((args.View.Text == "Week" || args.View.Text == "Day") && args.Start.Hour > 8 && args.Start.Hour < 19)
+        {
+            args.Attributes["style"] = "background: var(--rz-scheduler-highlight-background-color, rgba(255,220,40,.2));";
+        }
+    }
+
+    async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
+    {
+        // Check if the selected slot is a past or current date
+        if (args.Start.Date <= DateTime.Today)
+        {
+            // Show dialog if a disabled date is clicked
+            await dialogService.OpenAsync<MessageDialog>("Date Unavailable",
+            new Dictionary<string, object> { { "Message", "This date is not available for booking." } });
+        }
+        else
+        {
+            // Proceed with normal appointment scheduling
+            var data = await dialogService.OpenAsync<AddAppointment>("Add Appointment",
+            new Dictionary<string, object> { { "Start", args.Start }, { "End", args.End } });
+
+            if (data != null)
+            {
+                await appointmentService.AddAppointment(data);
+                appointments.Add(data);
+                await scheduler.Reload();
+            }
+        }
+    }
+
+
+    async Task OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<AppointmentDTO> args)
+    {
+        var copy = new AppointmentDTO
+        {
+                Id = args.Data.Id,
+                OwnerId = args.Data.OwnerId,
+                BreedId = args.Data.BreedId,
+                Services = args.Data.Services,
+                Comments = args.Data.Comments,
+                Reminder = args.Data.Reminder,
+                Email = args.Data.Email,
+                Phone = args.Data.Phone,
+                Start = args.Data.Start,
+                End = args.Data.End,
+                Title = args.Data.Title,
+                
+        };
+
+        var data = await dialogService.OpenAsync<EditAppointment>("Edit Appointment", new Dictionary<string, object> { { "Appointment", copy } });
+
+        if (data != null)
+        {
+           
+            await appointmentService.UpdateAppointment(data);
+            
+            var appointment = appointments.FirstOrDefault(x => x.Id == data.Id);
+            if (appointment != null)
+            {
+                appointment.OwnerId = data.OwnerId;
+                appointment.BreedId = data.BreedId;
+                appointment.Services = data.Services;
+                appointment.Comments = data.Comments;
+                appointment.Reminder = data.Reminder;
+                appointment.Email = data.Email;
+                appointment.Phone = data.Phone;
+                appointment.Start = data.Start;
+                appointment.End = data.End;
+                appointment.Title = data.Title;
+            }
+            await scheduler.Reload();
+        }
+       
+    }     
+
+    async Task OnAppointmentMove(SchedulerAppointmentMoveEventArgs args)
+    {
+        var draggedAppointment = appointments.FirstOrDefault(x => x == args.Appointment.Data);
+
+        if (draggedAppointment != null)
+        {
+            draggedAppointment.Start = draggedAppointment.Start + args.TimeSpan;
+
+            draggedAppointment.End = draggedAppointment.End + args.TimeSpan;
+
+            await scheduler.Reload();
+        }
+    }
+
+    void OnAppointmentMouseEnter(SchedulerAppointmentMouseEventArgs<AppointmentDTO> args)
+    {
+        TooltipService.Open(args.Element, ts =>
+    @<RadzenStack Orientation="Orientation.Vertical" Gap="0" class="rz-p-6" Style="min-width: 250px; max-width: 500px;">
+        <RadzenText TextStyle="TextStyle.H4" class="rz-mb-4" Style="color: var(--rz-tooltip-color);">
+            @args.Data.Title
+        </RadzenText>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="4px">
+            <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-tooltip-color); width: 44px;">
+                <strong>Start</strong>
+            </RadzenText>
+            <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-tooltip-color);">
+                @args.Data.Start.ToString("hh:mm ⋅ dddd, MMMM d")
+            </RadzenText>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="4px">
+            <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-tooltip-color); width: 44px;">
+                <strong>End</strong>
+            </RadzenText>
+            <RadzenText TextStyle="TextStyle.Body2" Style="color: var(--rz-tooltip-color);">
+                @args.Data.End.ToString("hh:mm ⋅ dddd, MMMM d")
+            </RadzenText>
+        </RadzenStack>
+    </RadzenStack>, new TooltipOptions { Position = TooltipPosition.Right, Duration = null });
+    }
+
+    void OnAppointmentMouseLeave(SchedulerAppointmentMouseEventArgs<AppointmentDTO> args)
+    {
+        TooltipService.Close();
+    }
+
+}

@@ -1,0 +1,80 @@
+﻿
+.scrollable-grid {
+    width: calc(100vw - 330px);
+    height: calc(100vh - 200px);
+}
+
+
+.or-section {
+    text-align: center;
+    margin: 20px 0;
+}
+
+    .or-section span {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+.import-section {
+    text-align: center;
+    margin: 20px 0;
+}
+
+    .import-section h4 {
+        margin-bottom: 10px;
+    }
+
+    .import-section input[type="file"] {
+        margin-bottom: 10px;
+    }
+
+/* Modal styling */
+.modal {
+    display: none; /* Initially hide the modal */
+    position: fixed; /* Stay in place */
+    z-index: 1050; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.5); /* Black background with opacity */
+    opacity: 0; /* Start invisible */
+    transition: opacity 0.3s ease; /* Fade in/out effect */
+}
+
+    /* Show modal with smooth effect */
+    .modal.show {
+        display: block; /* Show modal */
+        opacity: 1; /* Fully visible */
+    }
+
+/* Modal content */
+.modal-dialog {
+    position: relative;
+    margin: auto;
+    top: 10%; /* Space from the top */
+    max-width: 500px; /* Max width of modal */
+}
+
+/* Modal content transition */
+.modal-content {
+    background-color: #fff; /* White background */
+    border-radius: 0.3rem; /* Rounded corners */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Shadow effect */
+}
+
+/* Close button styling */
+.btn-close {
+    background: none; /* No background */
+    border: none; /* No border */
+    font-size: 1.5rem; /* Font size */
+}
+
+
+.custom-dropdown {
+    height: 25px; /* Adjust this value as needed */
+    padding: 0.100rem 0.50rem; /* This controls the inner padding */
+    font-size: 0.775rem; /* You can also adjust the font size */
+    line-height: 0.9;
+}

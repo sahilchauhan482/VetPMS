@@ -1,0 +1,171 @@
+﻿@page "/medicine/update/{id:int}"
+
+@attribute [Authorize(Roles = $"{Roles.Admin},{Roles.Clinic}")]
+@inject MedicineService medicineService
+@inject Blazored.Toast.Services.IToastService toastService
+@inject NavigationManager navigation
+
+<EditForm Model="updateMedicine" OnValidSubmit="HandleMedicineUpdation">
+    <FluentValidationValidator />
+
+    <div class="rounded border p-3 row" style="background-color:lightgrey">
+        <div class="col-10 text-black">
+            <RadzenLabel Text="Edit Medicine" Component="h3" />
+        </div>
+        <div class="col-2">
+            <RadzenButton Icon="edit" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" Disabled="@(isSubmitting || isSaveButtonDisabled)">
+                @if (isSubmitting)
+                {
+                    <RadzenIcon Icon="refresh" Class="fa-spin" />
+                    <span>&nbsp; Updation..</span>
+                }
+                else
+                {
+                    <span>Update</span>
+                }
+            </RadzenButton>
+        </div>
+    </div>
+
+    <div class="col-12 form-group row justify-content-center mt-3 ml-0">
+        <div class="row">
+            <div class="col-4">
+                <RadzenLabel Text="Medicine Name" />
+                <RadzenTextBox @bind-Value="updateMedicine.Name" Class="form-control" />
+                <ValidationMessage For="@(() => updateMedicine.Name)" />
+            </div>
+
+            <div class="col-4">
+                <RadzenLabel Text="Brand" />
+                <RadzenTextBox @bind-Value="updateMedicine.Brand" Class="form-control" />
+                <ValidationMessage For="@(() => updateMedicine.Brand)" />
+            </div>
+
+            <div class="col-4">
+                <RadzenLabel Text="Description" />
+                <RadzenTextBox @bind-Value="updateMedicine.Description" Class="form-control" />
+                <ValidationMessage For="@(() => updateMedicine.Description)" />
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 form-group row justify-content-center mt-3 ml-0">
+        <div class="row">
+            <div class="col-4">
+                <RadzenLabel Text="Medicine Type" />
+                <RadzenTextBox @bind-Value="updateMedicine.MedicineType" Class="form-control" />
+                <ValidationMessage For="@(() => updateMedicine.MedicineType)" />
+            </div>
+
+            <div class="col-4">
+                <RadzenLabel Text="Price" />
+                <RadzenNumeric @bind-Value="updateMedicine.Price" Class="form-control" />
+                <ValidationMessage For="@(() => updateMedicine.Price)" />
+            </div>
+
+            <div class="col-4">
+                <RadzenLabel Text="Unit" />
+                <RadzenTextBox @bind-Value="updateMedicine.Unit" Class="form-control" />
+                <ValidationMessage For="@(() => updateMedicine.Unit)" />
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 form-group row justify-content-center mt-3 ml-0">
+        <div class="row">
+            <div class="col-4">
+                <RadzenLabel Text="Quantity" />
+                <RadzenNumeric @bind-Value="updateMedicine.Quantity" Class="form-control" />
+                <ValidationMessage For="@(() => updateMedicine.Quantity)" />
+            </div>
+
+            <div class="col-4">
+                <RadzenLabel Text="Manufacturer" />
+                <RadzenTextBox @bind-Value="updateMedicine.Manufacturer" Class="form-control" />
+                <ValidationMessage For="@(() => updateMedicine.Manufacturer)" />
+            </div>
+
+            <div class="col-4">
+                <RadzenLabel Text="Supplier Name" />
+                <RadzenTextBox @bind-Value="updateMedicine.SupplierName" Class="form-control" />
+                <ValidationMessage For="@(() => updateMedicine.SupplierName)" />
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 form-group row justify-content-center mt-3 ml-0">
+        <div class="row">
+            <div class="col-4">
+                <RadzenLabel Text="Manufacturing Date" />
+                <RadzenDatePicker @bind-Value="updateMedicine.ManufacturingDate" Class="form-control" />
+                <ValidationMessage For="@(() => updateMedicine.ManufacturingDate)" />
+            </div>
+
+            <div class="col-4">
+                <RadzenLabel Text="Expiry Date" />
+                <RadzenDatePicker @bind-Value="updateMedicine.ExpiryDate" Class="form-control" />
+                <ValidationMessage For="@(() => updateMedicine.ExpiryDate)" />
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private MedicineDTO updateMedicine = new MedicineDTO();
+    private List<MedicineDTO>? medicinesList;
+    private bool isSubmitting = false;
+    private bool isLoading = true;
+    private bool isSaveButtonDisabled = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            isLoading = true;
+            var getMedicine = await medicineService.GetMedicineById(id);
+            if (getMedicine == null)
+            {
+                toastService.ShowError("Medicine not found");
+            }
+            else
+            {
+                updateMedicine = getMedicine;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Failed to load Medicine details: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleMedicineUpdation()
+    {
+        try
+        {
+            isSubmitting = true;
+            await medicineService.UpdateMedicine(updateMedicine);
+
+            updateMedicine = new MedicineDTO();
+            medicinesList = await medicineService.GetAllMedicines();
+
+            navigation.NavigateTo("/medicines");
+            toastService.ShowSuccess("Medicine updated successfully!");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError("Updation failed: " + ex.Message);
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

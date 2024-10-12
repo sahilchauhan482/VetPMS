@@ -1,0 +1,189 @@
+﻿@page "/patient/update/{id:int}"
+
+@attribute [Authorize(Roles = $"{Roles.Admin},{Roles.Clinic}")]
+@inject OwnerService ownerService
+@inject PatientService patientService
+@inject BreedService breedService
+@inject IToastService toastService
+@inject IJSRuntime js
+@inject NavigationManager navigation
+
+
+<EditForm Model="updatePatient" OnValidSubmit="HandlePatientUpdation">
+
+    <FluentValidationValidator />
+
+    <div class="rounded border p-3 row" style="background-color:lightgrey">
+        <div class="col-10 text-black">
+            <RadzenLabel Text="Update Patient" Component="h3" />
+        </div>
+        <div class="col-2">
+            <RadzenButton ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Disabled="@(isSubmitting)" Style="background-color:darkturquoise">
+                @if (isSubmitting)
+                {
+                    <RadzenIcon Icon="spinner" />
+                    <span>&nbsp; Update..</span>
+                }
+                else
+                {
+                    <RadzenIcon Icon="edit" />
+                    <span>Update</span>
+                }
+            </RadzenButton>
+        </div>
+    </div>
+
+    <div class="col-12 form-group row justify-content-center mt-5 ml-0">
+        <div class="row">
+            <div class="col-4">
+                <RadzenLabel Text="Pet Name" />
+                <RadzenTextBox @bind-Value="updatePatient.Name" Placeholder="Enter Name" class="form-control" />
+                <ValidationMessage For="@(() => updatePatient.Name)" />
+            </div>
+
+            <div class="col-4">
+                <RadzenLabel Text="Color" />
+                <RadzenTextBox @bind-Value="updatePatient.Colour" Placeholder="Enter Color" class="form-control" />
+                <ValidationMessage For="@(() => updatePatient.Colour)" />
+            </div>
+
+            <div class="col-4">
+                <RadzenLabel Text="Date Of Birth" />
+                <RadzenDatePicker @bind-Value="updatePatient.DOB" Placeholder="Enter Date Of Birth" class="form-control" />
+                <ValidationMessage For="@(() => updatePatient.DOB)" />
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 form-group row justify-content-center mt-4 ml-0">
+        <div class="row">
+            <div class="col-4">
+                <RadzenLabel Text="Owner Name" />
+                <RadzenDropDown @bind-Value="updatePatient.OwnerId" Data="@ownersList" TextProperty="Name" ValueProperty="Id" Placeholder="---Select Owner---" />
+                <ValidationMessage For="@(() => updatePatient.OwnerId)" />
+            </div>
+
+            <div class="col-4">
+                <RadzenLabel Text="Breed" />
+                <div class="position-relative">
+                    <RadzenDropDown @bind-Value="updatePatient.BreedId" Data="@breedList" TextProperty="Name" ValueProperty="Id" Placeholder="---Select Breed---" />
+                    <span class="input-icon" @onclick="ToggleAddBreedForm">
+                        <i class="@plusIcon"></i>
+                    </span>
+                </div>
+                <ValidationMessage For="@(() => updatePatient.BreedId)" />
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@if (showAddBreedForm)
+{
+    <div class="@(showAddBreedForm ? "form-container open" : "form-container closed")">
+        <div class="col-12 form-group row justify-content-center ml-0">
+            <div class="row">
+                <div class="col-4 offset-4">
+                    <div class="col-12 mt-2">
+                        <EditForm Model="newBreed" OnValidSubmit="AddBreed">
+                            <FluentValidationValidator />
+                            <div class="col-12 mt-3">
+                                <RadzenLabel Text="Add New Breed" />
+                                <RadzenTextBox @bind-Value="newBreed.Name" Placeholder="Enter Breed Name" class="form-control" />
+                                <ValidationMessage For="@(() => newBreed.Name)" />
+
+                                <RadzenLabel Text="Origin" class="mt-2" />
+                                <RadzenTextBox @bind-Value="newBreed.Origin" Placeholder="Enter Origin" class="form-control" />
+                                <ValidationMessage For="@(() => newBreed.Origin)" />
+
+                                <RadzenButton ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Success" class="mt-3" Text="Add" Style="width:100px" />
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private PatientsDTO updatePatient = new PatientsDTO { DOB = null };
+    private BreedDTO newBreed = new BreedDTO();
+    private bool isSubmitting = false;
+    private bool isLoading = false;
+    private bool showAddBreedForm = false;
+    private string plusIcon = "fas fa-plus";
+    private List<PatientsDTO>? patientList;
+    private List<OwnerDTO> ownersList = new List<OwnerDTO>();
+    private List<BreedDTO> breedList = new List<BreedDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            isLoading = true;
+            var getPatient = await patientService.GetPatientById(id);
+            if (getPatient == null)
+            {
+                toastService.ShowError("Patient not found");
+            }
+            else
+            {
+                updatePatient = getPatient;
+            }
+
+            ownersList = await ownerService.GetAllOwners();
+            breedList = await breedService.GetAllBreeds();
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Failed to load Patient details: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ToggleAddBreedForm()
+    {
+        showAddBreedForm = !showAddBreedForm;
+    }
+
+    private async Task AddBreed()
+    {
+        try
+        {
+            await breedService.AddBreed(newBreed);
+            newBreed = new BreedDTO();
+            breedList = await breedService.GetAllBreeds();
+            showAddBreedForm = false;
+        }
+        catch (Exception)
+        {
+            toastService.ShowError("Add Breed failed");
+        }
+    }
+
+    private async Task HandlePatientUpdation()
+    {
+        try
+        {
+            isSubmitting = true;
+            await patientService.UpdatePatient(updatePatient);
+            patientList = await patientService.GetAllPatient();
+            navigation.NavigateTo("/pets");
+            toastService.ShowSuccess("Patient updated successfully!");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError("Updation failed: " + ex.Message);
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

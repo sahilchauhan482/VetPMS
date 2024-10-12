@@ -1,0 +1,13 @@
+﻿@inject DialogService dialogService
+
+
+<RadzenCard Style="text-align:center; padding: 20px;">
+    <h3>@Message</h3>
+    <RadzenButton Text="Close" Click="@(args => dialogService.Close())" Style="margin-top: 20px;" />
+</RadzenCard>
+
+@code {
+
+    [Parameter]
+    public string Message { get; set; }
+}

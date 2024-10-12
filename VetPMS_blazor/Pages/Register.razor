@@ -1,0 +1,263 @@
+﻿@page "/register"
+@attribute [Authorize(Roles = $"{Roles.Admin}")]
+@inject RegisterService registerService
+@inject Blazored.Toast.Services.IToastService toastService
+@inject IJSRuntime js
+@inject ClinicService clinicService
+
+<div class="container border my-3" style="width:500px;">
+    <h2 class="text-center m-2" >Registeration</h2>
+
+    <EditForm Model="register" OnValidSubmit="HandleValidSubmit">
+        <FluentValidationValidator />
+
+        <div class="form-group row d-flex justify-content-center m-2">
+            <label>Full Name</label>
+            <div class="row">
+                <InputText class="form-control" placeholder="Enter FullName" title="@TooltipTexts.FullName" @bind-Value="register.FullName"></InputText>
+            </div>
+        </div>
+
+
+        <div class="form-group row d-flex justify-content-center m-2">
+            <label class="m-2">Gender</label>
+            <div class="d-flex align-items-center">
+
+                <InputRadioGroup @bind-Value="register.Gender" class="d-flex">
+                    @foreach (var gender in genderList)
+                    {
+                        <div class="form-check form-check-inline">
+                            <InputRadio id="@gender" class="form-check-input" title="@TooltipTexts.Gender" Value="@gender" />
+                            <label class="form-check-label" for="@gender">@gender</label>
+                        </div>
+                    }
+                </InputRadioGroup>
+            </div>
+        </div>
+
+
+        <div class="form-group row d-flex justify-content-center m-2">
+            <label>Phone Number</label>
+            <div class="row">
+                <InputText class="form-control" placeholder="Enter Phone Number" title="@TooltipTexts.PhoneNumber" onkeydown="AllowOnlyNumbers(event)" @oninput="CheckPhoneNumberDuplicate" @bind-Value="register.PhoneNumber"></InputText>
+                <div class="text-danger">@phoneErrorMessage</div>
+            </div>
+        </div>
+
+
+        
+
+        <div class="form-group row d-flex justify-content-center m-2">
+            <label>Email</label>
+            <div class="row">
+                <InputText class="form-control" placeholder="Select Email" title="@TooltipTexts.Email" @oninput="CheckEmailDuplicate" @bind-Value="register.Email"></InputText>
+                <div class="text-danger">@emailErrorMessage</div>
+            </div>
+        </div>
+
+        <div class="form-group row d-flex justify-content-center m-2">
+            <label>Clinic</label>
+            <div class="row">
+                <InputSelect class="form-control" title="" @bind-Value="register.ClinicId">
+                    <option value="">---Select Clinic---</option>
+                    @foreach (var clinic in clinicList)
+                    {
+                        <option value="@clinic.ClinicId">@clinic.ClinicName</option>
+                    }
+                </InputSelect>
+            </div>
+        </div>
+
+        <div class="form-group row d-flex justify-content-center m-2">
+            <label>Role</label>
+            <div class="row">
+                <InputSelect class="form-control" title="" @bind-Value="register.Role">
+                    <option value="">---Select Role---</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Clinic">Clinic</option>
+                   
+                </InputSelect>
+            </div>
+        </div>
+
+        <div class="form-group row d-flex justify-content-center m-2">
+            <label for="password">Password</label>
+            <div class="position-relative">
+                <InputText type="@passwordInputType" placeholder="Enter Password" title="@TooltipTexts.Password" class="form-control" @bind-Value="register.Password" id="password" />
+                <span class="input-icon" @onclick="TogglePasswordVisibility">
+                    <i class="@eyeIcon"></i>
+                </span>
+            </div>
+          
+
+
+        </div>
+
+        <div class="form-group row d-flex justify-content-center m-2">
+            <label for="password">Confirm Password</label>
+            <div class="position-relative">
+                <InputText type="@passwordInput" placeholder="Enter confirm Password" title="@TooltipTexts.ConfirmPassword" class="form-control" @bind-Value="register.ConfirmPassword" id="Password" @oninput="OnConfirmPassword" />
+                <span class="input-icon" @onclick="TogglePasswordVisible">
+                    <i class="@eyeIcon2"></i>
+                </span>
+            </div>
+            <div class="text-danger">@passwordError</div>
+        </div>
+
+        <div class="form-group row p-2 d-flex justify-content-center m-2">
+            <button type="submit" class="form-control text-black" disabled="@isSubmitting" >
+                @if (isSubmitting)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+
+                }
+                else
+                {
+                    <span><i class="fas fa-user"></i>&nbsp; Register</span>
+                }
+            </button>
+        </div>
+        <div class="form-group row p-2 d-flex justify-content-center m-2">
+            <a href="/" class="form-control text-center">
+                <i class="fas fa-backward"></i>&nbsp;  Back To Home
+            </a>
+        </div>
+    </EditForm>
+
+
+</div>
+
+@code {
+    private RegisterDTO register = new RegisterDTO();
+    private ClinicDto clinic = new ClinicDto();
+    private List<string> genderList = new List<string> { "Male", "Female", "Other" };
+    private bool isSubmitting = false;
+    private string? emailErrorMessage;
+    private string? phoneErrorMessage;
+    private string? passwordError;
+    private bool isSaveButtonDisabled = false;
+    private string passwordInputType = "password";
+    private string passwordInput = "password";
+    private string eyeIcon = "fas fa-eye";
+    private string eyeIcon2 = "fas fa-eye";
+    private List<ClinicDto> clinicList = new List<ClinicDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        clinicList = await clinicService.GetAllClinics();
+    }
+
+    private void OnConfirmPassword(ChangeEventArgs e)
+    {
+        register.ConfirmPassword = e.Value?.ToString()!;
+
+        if (register.Password != register.ConfirmPassword)
+        {
+            passwordError = "The confirm password does not match the password.";
+        }
+        else
+        {
+            passwordError = string.Empty;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await js.InvokeVoidAsync("addEventListenersToPhoneInput");
+        }
+    }
+
+    private async Task CheckEmailDuplicate(ChangeEventArgs e)
+    {
+        var email = e.Value!.ToString();
+        bool existEmail = await registerService.CheckEmailExistsAsync(email!);
+        if (existEmail)
+        {
+            emailErrorMessage = "Email already exists";
+            isSaveButtonDisabled = true;
+        }
+        else
+        {
+            emailErrorMessage = string.Empty;
+            isSaveButtonDisabled = false;
+        }
+        StateHasChanged();
+    }
+
+    private async Task CheckPhoneNumberDuplicate(ChangeEventArgs e)
+    {
+        var phoneNumber = e.Value!.ToString();
+        bool existPhone = await registerService.CheckPhoneNumberExistsAsync(phoneNumber!);
+
+        if (existPhone)
+        {
+            phoneErrorMessage = "Phone number already exists";
+            isSaveButtonDisabled = true;
+        }
+        else
+        {
+            phoneErrorMessage = string.Empty;
+            isSaveButtonDisabled = false;
+        }
+        StateHasChanged();
+    }
+
+    public async Task HandleValidSubmit()
+    {
+        if (register.Password != register.ConfirmPassword)
+        {
+            passwordError = "Passwords do not match";
+            return;
+        }
+        passwordError = "";
+        try
+        {
+            isSubmitting = true;
+            await registerService.CreateUser(register);
+            toastService.ShowSuccess("User registered successfully!");
+            register = new RegisterDTO();
+        }
+        catch (Exception)
+        {
+            toastService.ShowError("Registration failed");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        if (passwordInputType == "password")
+        {
+            passwordInputType = "text";
+
+            eyeIcon = "fas fa-eye-slash";
+        }
+        else
+        {
+            passwordInputType = "password";
+
+            eyeIcon = "fas fa-eye";
+        }
+    }
+
+
+
+    private void TogglePasswordVisible()
+    {
+        if (passwordInput == "password")
+        {
+            passwordInput = "text";
+            eyeIcon2 = "fas fa-eye-slash";
+        }
+        else
+        {
+            passwordInput = "password";
+            eyeIcon2 = "fas fa-eye";
+        }
+    }
+}

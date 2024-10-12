@@ -1,0 +1,28 @@
+﻿@page "/breeds"
+@inject BreedService breedService
+@inject DialogService DialogService
+
+<EditForm Model="breed" OnValidSubmit="HandleValidSubmit">
+    <FluentValidationValidator />
+    <div>
+        <label>Breed Name</label>
+        <InputText class="form-control" @bind-Value="breed.Name" />
+    </div>
+    <div>
+        <label>Origin</label>
+        <InputText class="form-control" @bind-Value="breed.Origin" />
+    </div>
+    <div class="d-flex justify-content-end mt-3">
+        <button type="submit" class="btn btn-success">Save</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public BreedDTO? breed { get; set; }
+
+    async Task HandleValidSubmit()
+    {
+        await breedService.AddBreed(breed!);
+        DialogService.Close(true);
+    }
+}

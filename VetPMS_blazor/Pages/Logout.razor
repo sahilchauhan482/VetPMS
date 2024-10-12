@@ -1,0 +1,17 @@
+﻿@page "/logout"
+
+@inject IAuthenticationService service
+@inject NavigationManager navigation
+@inject IToastService toastService
+
+
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await service.Logout();
+        toastService.ShowSuccess("Logged Out !!!!!");
+        navigation.NavigateTo("/login");
+
+    }
+}

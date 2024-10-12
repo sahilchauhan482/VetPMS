@@ -1,0 +1,35 @@
+﻿Hello {FullName},
+
+We’re pleased to confirm your appointment at VetPMS! Below are the details:
+
+🗓 Appointment Details:
+Title: {Title}
+Date: {StartDate}
+Time: {StartTime} - {EndTime}
+Services: {Services}
+Comments: {Comments}
+🐕 Pet Information:
+Pet's Breed: {Breed}
+Owner's Name: {FullName}
+Contact Email: {Email}
+Phone Number: {Phone}
+
+📝 Important Information:
+Arrival: Please arrive 10 minutes early for check-in.
+Pet Health: Notify us if your pet is unwell before the visit.
+Reminder: A reminder will be sent 24 hours before your appointment.
+Cancellation Policy: Kindly cancel/reschedule at least 24 hours in advance.
+First Visit? Bring your pet’s vaccination records.
+What to Expect:
+Our team will ensure a thorough checkup, answer any questions, and provide the necessary treatments based on the services requested.
+
+For any questions, contact us at support@vetpms.com or call +91-9876543210.
+
+Thank you for choosing VetPMS! We look forward to seeing you and caring for your pet.
+
+Best regards,
+The VetPMS Team
+[Website: www.vetpms.com]
+[Phone: +91-9876543210]
+[Email: support@vetpms.com]
+

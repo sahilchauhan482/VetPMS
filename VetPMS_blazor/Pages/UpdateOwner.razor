@@ -1,0 +1,171 @@
+﻿@page "/owner/update/{id:int}"
+
+@attribute [Authorize(Roles = $"{Roles.Admin},{Roles.Clinic}")]
+@inject OwnerService ownerService
+@inject Blazored.Toast.Services.IToastService toastService
+@inject IJSRuntime js
+@inject NavigationManager naivgation
+
+
+<EditForm Model="updateOwner" OnValidSubmit="HandleOwnerUpdation">
+    <FluentValidationValidator />
+
+    <div class="rounded border p-3 row" style="background-color:lightgrey">
+        <div class="col-10 text-black">
+            <RadzenLabel Text="Update Owner" Component="h3" />
+        </div>
+        <div class="col-2">
+            <RadzenButton Icon="edit" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" Disabled="@(isSubmitting || isSaveButtonDisabled)">
+                @if (isSubmitting)
+                {
+                    <RadzenIcon Icon="refresh" Class="fa-spin" />
+                    <span>&nbsp; Updating...</span>
+                }
+                else
+                {
+                    <span>Update</span>
+                }
+            </RadzenButton>
+        </div>
+    </div>
+
+    <div class="col-12 form-group row justify-content-center mt-5 ml-0">
+        <div class="row">
+            <div class="col-4">
+                <RadzenLabel Text="Owner Name" />
+                <RadzenTextBox @bind-Value="updateOwner.Name" Class="form-control" />
+                <ValidationMessage For="@(() => updateOwner.Name)" />
+            </div>
+
+            <div class="col-4">
+                <RadzenLabel Text="Address" />
+                <RadzenTextBox @bind-Value="updateOwner.Address" Class="form-control" />
+                <ValidationMessage For="@(() => updateOwner.Address)" />
+            </div>
+
+            <div class="col-4">
+                <RadzenLabel Text="Phone Number" />
+                <RadzenTextBox @bind-Value="updateOwner.PhoneNumber" Class="form-control" Id="phone" @oninput="CheckPhoneNumberDuplicate" />
+                <ValidationMessage For="@(() => updateOwner.PhoneNumber)" />
+                <div class="text-danger">@phoneErrorMessage</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 form-group row justify-content-center mt-5 ml-0">
+        <div class="row">
+            <div class="col-4">
+                <RadzenLabel Text="Email" />
+                <RadzenTextBox @bind-Value="updateOwner.Email" Class="form-control" @oninput="CheckEmailDuplicate" />
+                <ValidationMessage For="@(() => updateOwner.Email)" />
+                <div class="text-danger">@emailErrorMessage</div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public int id { get; set; }
+
+    private OwnerDTO updateOwner = new OwnerDTO();
+    private List<OwnerDTO>? ownersList;
+    private string? emailErrorMessage;
+    private string? phoneErrorMessage;
+    private bool isSubmitting = false;
+    private bool isLoading = false;
+    private bool isSaveButtonDisabled = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            isLoading = true;
+            var getOwner = await ownerService.GetOwnerById(id);
+            if (getOwner == null)
+            {
+                toastService.ShowError("Owner not found");
+            }
+            else
+            {
+                updateOwner = getOwner;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Failed to load owner details: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await js.InvokeVoidAsync("addEventListenersToPhoneInput");
+        }
+    }
+
+    private async Task CheckEmailDuplicate(ChangeEventArgs e)
+    {
+        var email = e.Value!.ToString();
+        bool existEmail = await ownerService.CheckEmailExistsAsync(email!);
+        if (existEmail)
+        {
+            emailErrorMessage = "Email already exists";
+            isSaveButtonDisabled = true;
+        }
+        else
+        {
+            emailErrorMessage = string.Empty;
+            isSaveButtonDisabled = false;
+        }
+        StateHasChanged();
+    }
+
+    private async Task CheckPhoneNumberDuplicate(ChangeEventArgs e)
+    {
+        var phoneNumber = e.Value!.ToString();
+        bool existPhone = await ownerService.CheckPhoneNumberExistsAsync(phoneNumber!);
+
+        if (existPhone)
+        {
+            phoneErrorMessage = "Phone number already exists";
+            isSaveButtonDisabled = true;
+        }
+        else
+        {
+            phoneErrorMessage = string.Empty;
+            isSaveButtonDisabled = false;
+        }
+        StateHasChanged();
+    }
+
+    private async Task HandleOwnerUpdation()
+    {
+        try
+        {
+            isSubmitting = true;
+            await ownerService.UpdateOwner(updateOwner);
+
+            updateOwner = new OwnerDTO();
+            ownersList = await ownerService.GetAllOwners();
+
+            naivgation.NavigateTo("/owners");
+            toastService.ShowSuccess("Owner updated successfully!");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError("Updation failed: " + ex.Message);
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

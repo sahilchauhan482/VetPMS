@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35219.272
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VetPMS.API", "..\VetPMS.API\VetPMS.API\VetPMS.API.csproj", "{2A4909F2-B7BF-43D4-87A6-97A088A61688}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VetPMS.Application", "..\VetPMS.API\VetPMS.Application\VetPMS.Application.csproj", "{A4A76D52-7D7C-401E-93CB-3FB1A787C9C5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VetPMS.Commands", "..\VetPMS.API\VetPMS.Commands\VetPMS.Commands.csproj", "{0ABEF0C0-87C7-46D0-B5CD-707F03802943}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VetPMS.Domain", "..\VetPMS.API\VetPMS.Domain\VetPMS.Domain.csproj", "{6DD2BB18-2FEF-44A6-AA00-6BCE3CFF8E12}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VetPMS.Infrastructure", "..\VetPMS.API\VetPMS.Infrastructure\VetPMS.Infrastructure.csproj", "{95DABCD2-669B-4BA1-8CCA-DCED2A809A02}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VetPMS", "VetPMS.csproj", "{348EA527-802D-489C-8391-C3EC12E20336}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2A4909F2-B7BF-43D4-87A6-97A088A61688}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A4909F2-B7BF-43D4-87A6-97A088A61688}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A4909F2-B7BF-43D4-87A6-97A088A61688}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A4909F2-B7BF-43D4-87A6-97A088A61688}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4A76D52-7D7C-401E-93CB-3FB1A787C9C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4A76D52-7D7C-401E-93CB-3FB1A787C9C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4A76D52-7D7C-401E-93CB-3FB1A787C9C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4A76D52-7D7C-401E-93CB-3FB1A787C9C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0ABEF0C0-87C7-46D0-B5CD-707F03802943}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0ABEF0C0-87C7-46D0-B5CD-707F03802943}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0ABEF0C0-87C7-46D0-B5CD-707F03802943}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0ABEF0C0-87C7-46D0-B5CD-707F03802943}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DD2BB18-2FEF-44A6-AA00-6BCE3CFF8E12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DD2BB18-2FEF-44A6-AA00-6BCE3CFF8E12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DD2BB18-2FEF-44A6-AA00-6BCE3CFF8E12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DD2BB18-2FEF-44A6-AA00-6BCE3CFF8E12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95DABCD2-669B-4BA1-8CCA-DCED2A809A02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95DABCD2-669B-4BA1-8CCA-DCED2A809A02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95DABCD2-669B-4BA1-8CCA-DCED2A809A02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95DABCD2-669B-4BA1-8CCA-DCED2A809A02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{348EA527-802D-489C-8391-C3EC12E20336}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{348EA527-802D-489C-8391-C3EC12E20336}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{348EA527-802D-489C-8391-C3EC12E20336}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{348EA527-802D-489C-8391-C3EC12E20336}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A9D0209D-AE41-4793-B262-B650BFD20881}
+	EndGlobalSection
+EndGlobal

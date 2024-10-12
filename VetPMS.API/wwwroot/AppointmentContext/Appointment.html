@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Confirmation</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+
+        h2 {
+            color: #4CAF50;
+        }
+
+        .important {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Appointment Confirmation 🐾</h2>
+
+    <p>Hello {FullName},</p>
+    <p>We're pleased to confirm your appointment at <strong>VetPMS</strong>! Below are the details:</p>
+
+    <h3>🗓 Appointment Details:</h3>
+    <table>
+        <tr>
+            <th>Appointment Title</th>
+            <td>{Title}</td>
+        </tr>
+        <tr>
+            <th>Date</th>
+            <td>{StartDate}</td>
+        </tr>
+        <tr>
+            <th>Time</th>
+            <td>{StartTime} - {EndTime}</td>
+        </tr>
+        <tr>
+            <th>Service(s) Requested</th>
+            <td>{Services}</td>
+        </tr>
+        <tr>
+            <th>Comments</th>
+            <td>{Comments}</td>
+        </tr>
+    </table>
+
+    <h3>🐕 Pet Information:</h3>
+    <table>
+        <tr>
+            <th>Pet's Breed</th>
+            <td>{Breed}</td>
+        </tr>
+        <tr>
+            <th>Owner's Name</th>
+            <td>{FullName}</td>
+        </tr>
+        <tr>
+            <th>Contact Email</th>
+            <td>{Email}</td>
+        </tr>
+        <tr>
+            <th>Phone Number</th>
+            <td>{Phone}</td>
+        </tr>
+    </table>
+
+    <div class="important">
+        <h4>Important Information:</h4>
+        <ul>
+            <li><strong>Arrival:</strong> Please arrive 10 minutes early for check-in.</li>
+            <li><strong>Pet Health:</strong> Let us know if your pet is unwell before the visit.</li>
+            <li><strong>Reminder:</strong> You will receive a reminder 24 hours before your appointment.</li>
+            <li><strong>Cancellation Policy:</strong> Please cancel or reschedule 24 hours in advance.</li>
+            <li><strong>First Visit:</strong> Bring your pet’s vaccination records.</li>
+        </ul>
+    </div>
+
+    <p>For any questions, feel free to contact us at <strong>support@vetpms.com</strong> or call <strong>+91-9876543210</strong>.</p>
+
+    <p>Thank you for choosing <strong>VetPMS</strong>! We look forward to seeing you and caring for your pet.</p>
+
+    <p>
+        Best regards,<br>
+        <strong>The VetPMS Team</strong>
+    </p>
+
+</body>
+</html>

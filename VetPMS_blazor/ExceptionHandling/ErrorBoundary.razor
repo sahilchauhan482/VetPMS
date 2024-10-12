@@ -1,0 +1,32 @@
+﻿@using Microsoft.AspNetCore.Components
+@inject GlobalErrorHandler ErrorHandler
+
+@code {
+    private bool _hasError;
+    private Exception? _exception;
+
+    // Method to capture and handle errors
+    public void CaptureError(Exception exception)
+    {
+        _hasError = true;
+        _exception = exception;
+        ErrorHandler.HandleErrorAsync(exception).Wait(); // Synchronous wait for async method
+        StateHasChanged(); // Notify the component that it needs to re-render
+    }
+}
+
+@if (_hasError)
+{
+    <div class="alert alert-danger">
+        <h4 class="alert-heading">An error occurred!</h4>
+        <p>@_exception?.Message</p>
+    </div>
+}
+else
+{
+    @ChildContent
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

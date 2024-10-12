@@ -1,0 +1,191 @@
+﻿@page "/clinics"
+@attribute [Authorize(Roles = $"{Roles.Admin}")]
+@inject ClinicService clinicService
+@inject Blazored.Toast.Services.IToastService toastService
+@inject IJSRuntime js
+@inject DialogService dialogService
+@inject NavigationManager Navigation
+
+<EditForm Model="newClinic" OnValidSubmit="HandleClinicSubmit" class="@(isFormVisible ? "form-container open" : "form-container closed")">
+    <FluentValidationValidator />
+
+    <div class="rounded border p-2 m-0 row align-items-center" style="background-color:lightgrey">
+        <div class="col-6 text-black">
+            <RadzenLabel Text="Add New Clinic" Component="h2" />
+        </div>
+        <div class="col-6 d-flex justify-content-end">
+            <RadzenButton Icon="close" class="btn" ButtonStyle="ButtonStyle.Danger" Click="CloseDialog" Style="margin-right: 10px;"> </RadzenButton>
+            <RadzenButton Icon="save" class="btn" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Success" Disabled="@(isSubmitting || isSaveButtonDisabled)">
+            </RadzenButton>
+        </div>
+    </div>
+
+    <div class="col-12 form-group row justify-content-center mt-3 ml-0">
+        <div class="row">
+            <div class="col-4">
+                <RadzenLabel Text="Clinic Name" />
+                <RadzenTextBox @bind-Value="newClinic.ClinicName" class="form-control " />
+                <ValidationMessage For="@(() => newClinic.ClinicName)" />
+            </div>
+
+            <div class="col-4">
+                <RadzenLabel Text="Address" />
+                <RadzenTextBox @bind-Value="newClinic.ClinicAddress" class="form-control " />
+                <ValidationMessage For="@(() => newClinic.ClinicAddress)" />
+            </div>
+
+            <div class="col-4">
+                <RadzenLabel Text="Phone Number" />
+                <RadzenTextBox @bind-Value="newClinic.ClinicPhone" class="form-control " Id="phone" @oninput="CheckPhoneNumberDuplicate" />
+                <div class="text-danger">@phoneErrorMessage</div>
+                <ValidationMessage For="@(() => newClinic.ClinicPhone)" />
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 form-group row justify-content-center mt-3 ml-0">
+        <div class="row">
+            <div class="col-4">
+                <RadzenLabel Text="Email" />
+                <RadzenTextBox @bind-Value="newClinic.ClinicEmail" class="form-control " @oninput="CheckEmailDuplicate" />
+                <div class="text-danger">@emailErrorMessage</div>
+                <ValidationMessage For="@(() => newClinic.ClinicEmail)" />
+            </div>
+
+            <div class="col-4">
+                <RadzenLabel Text="Established Date" />
+                <RadzenDatePicker @bind-Value="newClinic.EstablishedDate" />
+                <ValidationMessage For="@(() => newClinic.EstablishedDate)" />
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+<hr />
+
+<div class="rounded border p-2 mb-2 row align-items-center" style="background-color:lightgrey">
+    <div class="col-8 text-black">
+        <RadzenLabel Text="Clinics List" Component="h2" />
+    </div>
+    <div class="col-4 d-flex justify-content-end">
+        <RadzenButton Text="Add" Icon="add" ButtonStyle="ButtonStyle.Primary" Click="ToggleFormVisibility" />
+    </div>
+</div>
+
+<RadzenDataGrid TItem="ClinicDto" Data="@clinicsList" ColumnWidth="auto" AllowFiltering="true" AllowPaging="true" AllowSorting="true" PageSize="6"
+                class="scrollable-grid" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Responsive="true" Style="width: 100%;"
+                GridLines="DataGridGridLines.Both" Density="Density.Compact">
+    <Columns>
+        <RadzenDataGridColumn TItem="ClinicDto" Property="ClinicName" Title="Name" />
+        <RadzenDataGridColumn TItem="ClinicDto" Property="ClinicAddress" Title="Address" />
+        <RadzenDataGridColumn TItem="ClinicDto" Property="ClinicPhone" Title="Phone Number" />
+        <RadzenDataGridColumn TItem="ClinicDto" Property="ClinicEmail" Title="Email" />
+        <RadzenDataGridColumn TItem="ClinicDto" Property="EstablishedDate" Title="Established Date" />
+        <RadzenDataGridColumn Title="Actions">
+            <Template Context="item">
+                <div class="text-center">
+                    <RadzenButton Icon="edit" Click="@(async () => Navigation.NavigateTo($"/clinic/update/{item.ClinicId}"))" Style="margin-right: 10px;" ButtonStyle="ButtonStyle.Info" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Click="(() => DeleteClinic(item.ClinicId))" />
+                </div>
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    private ClinicDto newClinic = new ClinicDto();
+    private List<ClinicDto>? clinicsList;
+    private string? emailErrorMessage;
+    private string? phoneErrorMessage;
+    private bool isSubmitting = false;
+    private bool isLoading = false;
+    private bool isFormVisible = false;
+    private bool isSaveButtonDisabled = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        clinicsList = await clinicService.GetAllClinics();
+        isLoading = false;
+    }
+
+    private async Task CheckEmailDuplicate(ChangeEventArgs e)
+    {
+        var email = e.Value!.ToString();
+        bool existEmail = await clinicService.CheckEmailExistsAsync(email!);
+        if (existEmail)
+        {
+            emailErrorMessage = "Email already exists";
+            isSaveButtonDisabled = true;
+        }
+        else
+        {
+            emailErrorMessage = string.Empty;
+            isSaveButtonDisabled = false;
+        }
+        StateHasChanged();
+    }
+
+    private async Task CheckPhoneNumberDuplicate(ChangeEventArgs e)
+    {
+        var phoneNumber = e.Value!.ToString();
+        bool existPhone = await clinicService.CheckPhoneNumberExistsAsync(phoneNumber!);
+        if (existPhone)
+        {
+            phoneErrorMessage = "Phone number already exists";
+            isSaveButtonDisabled = true;
+        }
+        else
+        {
+            phoneErrorMessage = string.Empty;
+            isSaveButtonDisabled = false;
+        }
+        StateHasChanged();
+    }
+
+    private async Task HandleClinicSubmit()
+    {
+        try
+        {
+            isSubmitting = true;
+            await clinicService.AddClinic(newClinic);
+            toastService.ShowSuccess("Clinic registered successfully!");
+
+            newClinic = new ClinicDto();
+            clinicsList = await clinicService.GetAllClinics();
+            isFormVisible = false;
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError("Registration failed: " + ex.Message);
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void ToggleFormVisibility()
+    {
+        isFormVisible = !isFormVisible;
+    }
+
+    private void CloseDialog()
+    {
+        isFormVisible = false;
+    }
+
+    private async Task DeleteClinic(int id)
+    {
+        var clinicToDelete = clinicsList!.FirstOrDefault(c => c.ClinicId == id);
+        if (clinicToDelete != null)
+        {
+            var confirmed = await dialogService.Confirm("Are you sure you want to delete this Clinic?", "Confirm Delete");
+            if (confirmed == true)
+            {
+                await clinicService.DeleteClinic(id);
+                clinicsList = await clinicService.GetAllClinics();
+            }
+        }
+    }
+}
